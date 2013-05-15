@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="CyrusCodeExercise" default="build" basedir=".">
+	<description>
+        Coding Problem for Cyrus Job Application
+    </description>
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="bin" location="bin" />
+	<property name="tests" location="tests" />
+	<property name="test-classes" location="test-classes" />
+	<property name="junit.output.dir" location="tmp/rawtestoutput" />
+
+	<path id="JUnit 4.libraryclasspath">
+		<pathelement location="lib/junit.jar" />
+		<pathelement location="lib/org.hamcrest.core_1.1.0.v20090501071000.jar" />
+		<pathelement location="lib/ant-junit.jar" />
+	</path>
+	<path id="CyrusCodeExercise.classpath">
+		<pathelement location="bin" />
+		<pathelement location="${test-classes}" />
+		<path refid="JUnit 4.libraryclasspath" />
+	</path>
+
+	<target name="run" depends="compile" description="runs the PersonFileParser on input_files">
+		<java classname="cyrus.assignment.PersonFileParser" classpathref="CyrusCodeExercise.classpath" fork="no">
+			<arg value="input_files"/>
+		</java>
+	</target>
+	
+	<target name="init">
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${bin}" />
+		<mkdir dir="${test-classes}" />
+	</target>
+
+	<target name="compile" depends="init" description="compile the source ">
+		<!-- Compile the java code from ${src} into ${bin} -->
+		<javac srcdir="${src}" destdir="${bin}" includeantruntime="false" />
+	</target>
+
+	<target name="dist" depends="unittest" description="generate the distribution">
+		<!-- Put everything in ${bin} into the .jar file -->
+		<jar jarfile="CyrusCodeExercise.jar" basedir="${bin}" />
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${bin}" />
+		<delete dir="${test-classes}" />
+		<delete dir="test-reports" />
+		<delete dir="tmp" />
+		<delete file="CyrusCodeExercise.jar" />
+	</target>
+
+	<target name="compile-tests" depends="compile" description="compile the tests ">
+		<!-- Compile the java code from ${src} into ${bin} -->
+		<javac srcdir="${tests}" destdir="${test-classes}" classpathref="CyrusCodeExercise.classpath" includeantruntime="false" />
+	</target>
+
+	<target name="build" depends="compile,compile-tests" description="compiles src and tests">
+	</target>
+	
+	<target name="unittest" description="Execute unit tests" depends="compile-tests">
+		<mkdir dir="tmp/rawtestoutput" />
+		<junit printsummary="true" failureproperty="junit.failure">
+			<classpath refid="CyrusCodeExercise.classpath" />
+
+			<batchtest todir="tmp/rawtestoutput">
+				<fileset dir="${test-classes}" includes="**/*.class" />
+				<formatter type="xml" />
+			</batchtest>
+
+		</junit>
+		<junitreport todir="tmp">
+			<fileset dir="tmp/rawtestoutput" />
+			<report todir="test-reports" />
+		</junitreport>
+		<fail if="junit.failure" message="Unit test(s) failed.  See reports!" />
+	</target>
+
+</project>
